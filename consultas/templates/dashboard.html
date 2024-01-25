@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<body style="background-color: rgba(211, 211, 211, 0.707);">
+<head>
+    <meta http-equiv="refresh" content="600">
+</head>
+<main class="container pt-5">
+    <div class="row">
+        {% if error %}
+            <p>Error: {{ error }}</p>
+        {% else %}
+            {% csrf_token %}
+            <div class="table-responsive text-center" style="padding-top: 15px;" >
+                <table id="dashboard-table" class="table mx-auto" style=" border: 2px solid black;">
+                    <thead>
+                        <tr>
+                            <th scope="col">Juego</th>
+                            <th scope="col">Publico en laberinto</th>
+                            <th scope="col">Tiempo espera</th>
+                            <th scope="col">Productividad por Hora</th>
+                            <th scope="col">Fecha</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in dataR %}
+                            <tr>
+                                <td>Raptor</td>
+                                <td>{{ entry.media_por_hora_C }}</td>
+                                <td>{{ entry.media_espera }} Minutos</td>
+                                <td>{{entry.totalExH }}</td>
+                                <td>{{ entry.hora_actual }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tbody>
+                        {% for entry in dataB %}
+                            <tr>
+                                <td>BlackHole</td>
+                                <td>{{ entry.media_por_hora_C }}</td>
+                                <td>{{ entry.media_espera }} Minutos</td>
+                                <td>{{ entry.totalExH }}</td>
+                                <td>{{ entry.hora_actual }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        <form method="post" action="{% url 'dashboard' %}" class="d-flex justify-content-end">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">Actualizar Datos</button>
+        </form>
+    </div>
+</main>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main class="container">
+    <div class="row">
+        {% if error_token %}
+            <p>Error al obtener el token de acceso: {{ error_token }}</p>
+        {% elif error_api %}
+            <p>Error al realizar la consulta a la API: {{ error_api }}</p>
+        {% else %}
+            {% csrf_token %}
+            <table class="table" style="padding-top: 10px;">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Versión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>{{ data_api.data.produceName }}</td>
+                        <td>{{ data_api.data.softVersion }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <div class="row">
+        <p>Consulta realizada con los siguientes parámetros:</p>
+        <ul>
+            <li>Índice de cámara: {{ data_api.data.cameraIndexCode }}</li>
+        </ul>
+    </div>
+</main>
+
+{% endblock %}
