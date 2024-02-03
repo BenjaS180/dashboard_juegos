@@ -58,20 +58,23 @@ def dashboard(request):
     start_time_00 = fecha_actual.replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%S%z") + "+08:00"
     end_time2 = fecha_actual_menos_una_hora.strftime("%Y-%m-%dT%H:%M:%S%z") + "+08:00"
 
+    print(start_time_00)
+    print(end_time)
+
 
     # URL de la API
     api_url = "https://172.16.2.40/artemis/api/aiapplication/v1/people/statisticsTotalNumByTime"
 
-    # Payloads para las solicitudes a la API ## RAPTOR ## CAMARA IMPLEMENTACION 1 ##
-    payloadA_R = {"pageNo": 1,"pageSize": 2, "cameraIndexCodes": "5", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
-    payloadB_R = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "4", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
-    payloadHE_R = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "4", "statisticsType": 4, "startTime": end_time2, "endTime": end_time}
+    # Payloads para las solicitudes a la API ## RAPTOR ## CAMARA IMPLEMENTACION 1   ||| 60 = produccion ||| 61 = demanda ||| ##
+    payloadA_R = {"pageNo": 1,"pageSize": 2, "cameraIndexCodes": "61", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
+    payloadB_R = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "60", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
+    payloadHE_R = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "60", "statisticsType": 4, "startTime": end_time2, "endTime": end_time}
 
 
-    # Payloads para las solicitudes a la API ## BLACKHOLE ## CAMARA IMPLEMENTACION 2 ##
-    payloadA_B = {"pageNo": 1,"pageSize": 2, "cameraIndexCodes": "6", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
-    payloadB_B = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "2", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
-    payloadHE_B = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "2", "statisticsType": 4, "startTime": end_time2, "endTime": end_time}
+    # Payloads para las solicitudes a la API ## BLACKHOLE ## CAMARA IMPLEMENTACION 2 ||| 69 = produccion ||| 63 = demanda |||##
+    payloadA_B = {"pageNo": 1,"pageSize": 2, "cameraIndexCodes": "63", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
+    payloadB_B = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "69", "statisticsType": 1, "startTime": start_time_00, "endTime": end_time}
+    payloadHE_B = {"pageNo": 1, "pageSize": 2, "cameraIndexCodes": "69", "statisticsType": 4, "startTime": end_time2, "endTime": end_time}
 
 
 
@@ -160,9 +163,11 @@ def calcular_data_c(dataA_R, dataB_R, dataHE_R, totalExH):
     dataR = []
     fecha_actual = datetime.now()
     for entryA, entryB, entryHE in zip(dataA_R["data"]["list"], dataB_R["data"]["list"], dataHE_R["data"]["list"]):
-        media_por_hora_A = entryA["enterNum"]
+        media_por_hora_A = entryA["enterNum"] - entryA["exitNum"]
         media_por_hora_B = entryB["exitNum"] - entryB["enterNum"]
         media_por_hora_C = max(media_por_hora_A - media_por_hora_B,0)
+        print(media_por_hora_A)
+        print(media_por_hora_B)
 
         # Verificar si totalExH es diferente de cero antes de realizar la división
         if totalExH != 0:
