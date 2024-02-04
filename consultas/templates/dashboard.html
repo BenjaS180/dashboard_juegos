@@ -26,27 +26,40 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for entry in dataR %}
+                        {% if dataR is not none %}
+                            {% for entry in dataR %}
+                                <tr>
+                                    <td>{{ entry.nombre_puesto }}</td>
+                                    <td>{{ entry.media_por_hora_C | default(0) }}</td>
+                                    <td>{{ entry.media_espera | default(0) }} Minutos</td>
+                                    <td>{{ entry.totalExH | default(0) }}</td>
+                                    <td>{{ entry.hora_actual | default(0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <td>Raptor</td>
-                                <td>{{ entry.media_por_hora_C }}</td>
-                                <td>{{ entry.media_espera }} Minutos</td>
-                                <td>{{entry.totalExH }}</td>
-                                <td>{{ entry.hora_actual }}</td>
+                                <td colspan="5">Parque cerrado</td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
                     <tbody>
-                        {% for entry in dataB %}
+                        {% if dataB is not none %}
+                            {% for entry in dataB %}
+                                <tr>
+                                    <td>BlackHole</td>
+                                    <td>{{ entry.media_por_hora_C | default(0) }}</td>
+                                    <td>{{ entry.media_espera | default(0) }} Minutos</td>
+                                    <td>{{ entry.totalExH | default(0) }}</td>
+                                    <td>{{ entry.hora_actual | default(0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <td>BlackHole</td>
-                                <td>{{ entry.media_por_hora_C }}</td>
-                                <td>{{ entry.media_espera }} Minutos</td>
-                                <td>{{ entry.totalExH }}</td>
-                                <td>{{ entry.hora_actual }}</td>
+                                <td colspan="5">Parque cerrado</td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
+                    
                 </table>
             </div>
         {% endif %}
