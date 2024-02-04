@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate,logout
 import requests  # Corrige la importación de requests
 from django.contrib.auth.decorators import login_required
 from datetime import datetime,timedelta
-import math
+import math,json
 
 
 def signin(request):
@@ -140,11 +140,17 @@ def dashboard(request):
         return render(request, 'dashboard.html', {'dataR': dataR, 'dataB': dataB})
 
 def obtener_datos(response):
-    data = response.json() if "data" in response.json() and "list" in response.json()["data"] else {"data": {"list": []}}
-    for entry in data["data"]["list"]:
-        entry["media_por_hora"] = entry.get("enterNum", 0) - entry.get("exitNum", 0)
-        
+    try:
+        data = response.json()
+        if "data" in data and "list" in data["data"]:
+            for entry in data["data"]["list"]:
+                entry["media_por_hora"] = entry.get("enterNum", 0) - entry.get("exitNum", 0)
+        else:
+            data = {"data": {"list": []}}
+    except json.JSONDecodeError:
+        data = {"data": {"list": []}}
     return data
+
 
 def calcular_diferencia(data, enter_key, exit_key):
     if "data" in data and "list" in data["data"]:
@@ -162,25 +168,37 @@ def calcular_diferencia(data, enter_key, exit_key):
 def calcular_data_c(dataA_R, dataB_R, dataHE_R, totalExH):
     dataR = []
     fecha_actual = datetime.now()
-    for entryA, entryB, entryHE in zip(dataA_R["data"]["list"], dataB_R["data"]["list"], dataHE_R["data"]["list"]):
-        media_por_hora_A = entryA["enterNum"] - entryA["exitNum"]
-        media_por_hora_B = entryB["exitNum"] - entryB["enterNum"]
-        media_por_hora_C = max(media_por_hora_A - media_por_hora_B,0)
-        print(media_por_hora_A)
-        print(media_por_hora_B)
 
-        # Verificar si totalExH es diferente de cero antes de realizar la división
-        if totalExH != 0:
-            media_espera = math.ceil((media_por_hora_C / totalExH) * 60)
-        else:
-            # En este caso, podrías establecer media_espera en un valor predeterminado o manejarlo de alguna otra manera
-            media_espera = 0  # O cualquier otro valor que tenga sentido en tu contexto
-
+    # Verificar si es antes de las 12 horas
+    if fecha_actual.hour < 12:
+        # Establecer todos los datos en cero y mostrar el mensaje de parque cerrado
         dataR.append({
-            "media_por_hora_C": media_por_hora_C,
-            "media_espera": media_espera,
-            "media_por_hora_B": media_por_hora_B,
-            "hora_actual": fecha_actual,
-            "totalExH": totalExH,
+            "media_por_hora_C": 0,
+            "media_espera": 0,
+            "media_por_hora_B": 0,
+            "hora_actual":"Juego cerrado.",
+            "totalExH": 0,
         })
+    else:
+        # Procesar datos normalmente
+        for entryA, entryB, entryHE in zip(dataA_R["data"]["list"], dataB_R["data"]["list"], dataHE_R["data"]["list"]):
+            media_por_hora_A = entryA["enterNum"] - entryA["exitNum"]
+            media_por_hora_B = entryB["exitNum"] - entryB["enterNum"]
+            media_por_hora_C = max(media_por_hora_A - media_por_hora_B, 0)
+
+            # Verificar si totalExH es diferente de cero antes de realizar la división
+            if totalExH != 0:
+                media_espera = math.ceil((media_por_hora_C / totalExH) * 60)
+            else:
+                # En este caso, podrías establecer media_espera en un valor predeterminado o manejarlo de alguna otra manera
+                media_espera = 0  # O cualquier otro valor que tenga sentido en tu contexto
+
+            dataR.append({
+                "media_por_hora_C": media_por_hora_C,
+                "media_espera": media_espera,
+                "media_por_hora_B": media_por_hora_B,
+                "hora_actual": fecha_actual,
+                "totalExH": totalExH,
+            })
+
     return dataR
