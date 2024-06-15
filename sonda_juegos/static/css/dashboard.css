@@ -1,0 +1,6 @@
+.not-bold {
+    font-weight: normal !important;
+}
+.dashboard-table{
+    vertical-align: top; /* Alinea el texto hacia arriba */
+}

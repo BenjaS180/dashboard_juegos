@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <!DOCTYPE html>
 <html lang="es">
 <body style="background-color: rgba(211, 211, 211, 0.707);">
 <head>
     <meta http-equiv="refresh" content="600">
+    <link type="text/css" rel="stylesheet" href='{% static "css/dashboard.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 </head>
 <main class="container pt-5">
     <div class="row">
@@ -13,48 +16,122 @@
             <p>Error: {{ error }}</p>
         {% else %}
             {% csrf_token %}
-            <div class="table-responsive text-center" style="padding-top: 15px;" >
+            <div class="table-responsive text-center" style="padding-top: 20px;" >
+                <h1>Dashboard Productividad Juegos</h1>
+                {% if dataR %}
+                <h3 style="text-align: left;margin-bottom: 20px;font-size: 80%;"> Fecha: {{ dataR.0.hora_actual }}</h3>
+                <h3 style="text-align: left;margin-bottom: 20px;font-size: 80%;"> Estado Parque: {{ dataR.0.dispoparque }}</h3>
+                <h3 style="text-align: left;margin-bottom: 20px;font-size: 80%;"> Publico en Parque: {{ dataR.0.cantidadgente }}</h3>
+
+                {% endif %}
                 <table id="dashboard-table" class="table mx-auto" style=" border: 2px solid black;">
                     <thead>
                         <tr>
-                            <th scope="col">Juego</th>
-                            <th scope="col">Publico en laberinto</th>
-                            <th scope="col">Tiempo espera</th>
-                            <th scope="col">Productividad por Hora</th>
-                            <th scope="col">Fecha</th>
-
+                            <th scope="col" style="vertical-align: top; font-size: 80%;text-align: left;">
+                                Juego
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Produccion
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Demanda
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Publico en laberinto
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Tiempo espera 
+                                <i class="fas fa-sort"></i>
+                                <br><span style="font-weight: normal; font-size: 80%;">(Minutos)</span>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Productividad Real
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Productividad Optima
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th scope="col" style="vertical-align: top; font-size: 80%;">
+                                Productividad Real v/s Optima
+                                <i class="fas fa-sort"></i>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for entry in dataR %}
-                            <tr>
-                                <td>Raptor</td>
-                                <td>{{ entry.media_por_hora_C }}</td>
-                                <td>{{ entry.media_espera }} Minutos</td>
-                                <td>{{entry.totalExH }}</td>
-                                <td>{{ entry.hora_actual }}</td>
-                            </tr>
+                        <tr>
+                            <td style="text-align: left;">Raptor</td>
+                            <td>{{ entry.produccion }}</td>
+                            <td>{{ entry.demanda }}</td>
+                            <td>{{ entry.media_por_hora_C }}</td>
+                            <td>{{ entry.media_espera }}</td>
+                            <td>{{ entry.totalExH }}</td>
+                            <td>{{ entry.optimo_raptor }}</td>
+                            <td>{{ entry.diferencia_raptor }}</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                     <tbody>
                         {% for entry in dataB %}
-                            <tr>
-                                <td>BlackHole</td>
-                                <td>{{ entry.media_por_hora_C }}</td>
-                                <td>{{ entry.media_espera }} Minutos</td>
-                                <td>{{ entry.totalExH }}</td>
-                                <td>{{ entry.hora_actual }}</td>
-                            </tr>
+                        <tr>
+                            <td style="text-align: left;">BlackHole</td>
+                            <td>{{ entry.produccion }}</td>
+                            <td>{{ entry.demanda }}</td>
+                            <td>{{ entry.media_por_hora_C }}</td>
+                            <td>{{ entry.media_espera }}</td>
+                            <td>{{ entry.totalExH }}</td>
+                            <td>{{ entry.optimo_blackhole }}</td>
+                            <td>{{ entry.diferencia_blackhole }}</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         {% endif %}
+
         <form method="post" action="{% url 'dashboard' %}" class="d-flex justify-content-end">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary btn-sm">Actualizar Datos</button>
         </form>
     </div>
 </main>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $.noConflict();
+    jQuery(document).ready(function($) {
+        // Función para ordenar la tabla al hacer clic en los encabezados
+        $('th').click(function(){
+            var table = $(this).parents('table').eq(0);
+            var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+            this.asc = !this.asc;
+            if (!this.asc){rows = rows.reverse();}
+            for (var i = 0; i < rows.length; i++){table.append(rows[i]);}
+            
+            // Cambiar el icono de la flecha según el estado de ordenación
+            $('th i').removeClass('fa-sort-up fa-sort-down');
+            $(this).find('i').addClass(this.asc ? 'fa-sort-up' : 'fa-sort-down');
+            
+            // Eliminar clase de icono de otras columnas
+            $(this).siblings().find('i').removeClass('fa-sort-up fa-sort-down');
+            $(this).siblings().find('i').addClass('fa-sort');
+        });
+        // Función para comparar los valores de las celdas
+        function comparer(index) {
+            return function(a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index);
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
+            };
+        }
+        // Función para obtener el valor de la celda
+        function getCellValue(row, index){ return $(row).children('td').eq(index).text(); }
+    });
+</script>
 
 {% endblock %}
+</body>
+</html>
